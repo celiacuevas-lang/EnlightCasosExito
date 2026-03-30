@@ -115,7 +115,7 @@ const ProjectCard = ({ project }) => {
                             </div>
                         )}
                         <div className="space-y-3">
-                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Especificaciones</h4>
+                            <h4 className="text-xs font-bold text-gray-400 font-normal">Especificaciones</h4>
                             <div className="text-xs space-y-2">
                                 {!isMicro && <div className="flex justify-between bg-gray-50 p-2 rounded-lg"><span className="text-gray-500">Sector</span><span className="font-bold text-[#293C47]">{project.sector}</span></div>}
                                 <div className="flex justify-between bg-gray-50 p-2 rounded-lg"><span className="text-gray-500">Tipo de solución</span><span className="font-bold text-[#293C47]">{project.solutionType}</span></div>
@@ -164,7 +164,7 @@ const App = () => {
 
     const renderBanner = () => {
         const bannerClasses = 'bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-10 flex flex-wrap justify-around items-center text-center gap-6';
-        const labelClasses  = 'text-xs text-gray-400 uppercase font-bold mt-1';
+        const labelClasses  = 'text-sm text-[#293C47] font-normal mt-1';
         if (activeTab === 'solar') return (
             <div className={bannerClasses}>
                 <div><h4 className="text-3xl font-bold" style={{color:'#00AA85'}}>{BANNERS.solar.power}</h4><p className={labelClasses}>Potencia instalada</p></div>
@@ -200,7 +200,7 @@ const App = () => {
                 </div>
                 <div className="space-y-6">
                     <div className="flex justify-between items-center">
-                        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Filtros Avanzados</h2>
+                        <h2 className="text-xs font-bold text-gray-400 font-normal">Filtros Avanzados</h2>
                         {isAnyFilterActive && <button onClick={resetFilters} className="text-[10px] text-[#FFA817] font-bold underline">Limpiar</button>}
                     </div>
                     <div className="space-y-4">
