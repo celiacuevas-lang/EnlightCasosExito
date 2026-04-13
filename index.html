@@ -6,19 +6,163 @@
     <title>Casos de Éxito | Enlight</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         body { font-family: 'Alexandria', sans-serif; background-color: #f7f8f9; }
         .sidebar { transition: transform 0.3s ease-in-out; transform: translateX(-100%); }
         .sidebar.open { transform: translateX(0); }
         .expandable-content { transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out; max-height: 0; overflow: hidden; opacity: 0; }
         .expandable-content.open { max-height: 1200px; opacity: 1; }
+
+        /* ── Login overlay ── */
+        #login-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: linear-gradient(135deg, #121926 0%, #293C47 60%, #3D7D80 100%);
+            display: flex; align-items: center; justify-content: center;
+        }
+        #login-overlay.hidden { display: none; }
+        .login-card {
+            background: white; border-radius: 24px; padding: 48px 40px;
+            text-align: center; max-width: 400px; width: 90%;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+        }
+        .login-card img.logo { height: 36px; margin: 0 auto 28px; }
+        .login-card h1 { font-size: 1.4rem; font-weight: 700; color: #293C47; margin-bottom: 6px; }
+        .login-card p  { font-size: 0.85rem; color: #828080; margin-bottom: 28px; line-height: 1.5; }
+        #error-msg {
+            display: none; margin-top: 16px; padding: 10px 14px;
+            background: #fef2f2; border: 1px solid #fca5a5;
+            border-radius: 10px; font-size: 0.8rem; color: #dc2626;
+        }
+        /* center the Google button */
+        #g_id_signin { display: flex; justify-content: center; }
+
+        /* ── User chip (top-right when logged in) ── */
+        #user-chip {
+            display: none;
+            position: fixed; top: 16px; right: 16px; z-index: 1000;
+            background: white; border-radius: 999px; padding: 6px 14px 6px 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+            align-items: center; gap: 8px; font-size: 0.78rem; color: #293C47;
+        }
+        #user-chip img { width: 28px; height: 28px; border-radius: 50%; }
+        #user-chip button {
+            margin-left: 8px; font-size: 0.7rem; color: #828080;
+            background: none; border: none; cursor: pointer; text-decoration: underline;
+        }
     </style>
 </head>
 <body>
+
+<!-- ══════════════════════════════════════════
+     LOGIN OVERLAY
+══════════════════════════════════════════ -->
+<div id="login-overlay">
+    <div class="login-card">
+        <img class="logo" src="https://www.enlight.mx/hubfs/Casos%20de%20%C3%A9xito/Logotipo_Enlight-02.png" alt="Enlight">
+        <h1>Casos de Éxito</h1>
+        <p>Acceso exclusivo para el equipo Enlight.<br>Inicia sesión con tu cuenta <strong>@enlight.mx</strong>.</p>
+
+        <!--
+            IMPORTANTE: Reemplaza YOUR_GOOGLE_CLIENT_ID con tu Client ID real
+            de Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client ID
+            Asegúrate de que tu dominio (ej. casos.enlight.mx) esté en "Authorized JavaScript origins"
+        -->
+        <div id="g_id_onload"
+             data-client_id="YOUR_GOOGLE_CLIENT_ID"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin"
+             data-type="standard"
+             data-shape="rectangular"
+             data-theme="outline"
+             data-text="signin_with"
+             data-size="large"
+             data-locale="es"
+             data-width="320">
+        </div>
+
+        <div id="error-msg"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     USER CHIP (visible al loguearse)
+══════════════════════════════════════════ -->
+<div id="user-chip">
+    <img id="user-avatar" src="" alt="">
+    <span id="user-name"></span>
+    <button onclick="logout()">Salir</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     APP REACT
+══════════════════════════════════════════ -->
 <div id="root"></div>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<!-- ── Auth logic (vanilla JS, antes de Babel) ── -->
+<script>
+    const ALLOWED_DOMAIN = 'enlight.mx';
+    const SESSION_KEY    = 'enlight_user';
+
+    // Decodifica JWT de Google (sin verificar firma, solo lectura de payload)
+    function parseJwt(token) {
+        try {
+            return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        } catch { return null; }
+    }
+
+    // Callback que llama Google tras el login
+    function handleCredentialResponse(response) {
+        const payload = parseJwt(response.credential);
+        if (!payload) return showError('No se pudo leer la respuesta de Google.');
+
+        const email = payload.email || '';
+        if (!email.endsWith('@' + ALLOWED_DOMAIN)) {
+            showError(`Acceso denegado. Solo se permiten cuentas @${ALLOWED_DOMAIN}.<br>Estás usando: <strong>${email}</strong>`);
+            return;
+        }
+
+        // Guarda sesión y muestra la app
+        const user = { name: payload.name, email, picture: payload.picture };
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+        showApp(user);
+    }
+
+    function showApp(user) {
+        document.getElementById('login-overlay').classList.add('hidden');
+
+        const chip   = document.getElementById('user-chip');
+        chip.style.display = 'flex';
+        document.getElementById('user-avatar').src    = user.picture || '';
+        document.getElementById('user-name').textContent = user.name || user.email;
+    }
+
+    function logout() {
+        sessionStorage.removeItem(SESSION_KEY);
+        location.reload();
+    }
+
+    function showError(msg) {
+        const el = document.getElementById('error-msg');
+        el.innerHTML = msg;
+        el.style.display = 'block';
+    }
+
+    // Al cargar, revisar si ya hay sesión activa
+    window.addEventListener('load', () => {
+        const stored = sessionStorage.getItem(SESSION_KEY);
+        if (stored) {
+            try { showApp(JSON.parse(stored)); } catch { sessionStorage.removeItem(SESSION_KEY); }
+        }
+    });
+</script>
+
 <script type="text/babel">
 const { useState, useEffect, useMemo } = React;
 const { createRoot } = ReactDOM;
