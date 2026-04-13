@@ -132,7 +132,120 @@ const ProjectCard = ({ project }) => {
     );
 };
 
+
+// ─────────────────────────────────────────────
+// USUARIOS AUTORIZADOS
+// Para agregar un usuario: añade una línea con
+// { email: 'correo@enlight.mx', password: 'Clave!' }
+// ─────────────────────────────────────────────
+const LOGIN_USERS = [
+    { email: 'admin@enlight.mx', password: 'Enlight2024!' }
+];
+
+const ALLOWED_DOMAIN = '@enlight.mx';
+
+const useAuth = () => {
+    const [authed, setAuthed] = useState(() => sessionStorage.getItem('enlight_auth') === 'true');
+    const login = (email, password) => {
+        if (!email.endsWith(ALLOWED_DOMAIN)) return 'domain';
+        const found = LOGIN_USERS.find(u => u.email === email && u.password === password);
+        if (found) { sessionStorage.setItem('enlight_auth', 'true'); setAuthed(true); return 'ok'; }
+        return 'wrong';
+    };
+    const logout = () => { sessionStorage.removeItem('enlight_auth'); setAuthed(false); };
+    return { authed, login, logout };
+};
+
+const LoginPage = ({ onLogin }) => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [showPass, setShowPass] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = () => {
+        if (!email || !password) { setError('Por favor ingresa tu correo y contraseña.'); return; }
+        setLoading(true);
+        setTimeout(() => {
+            const result = onLogin(email, password);
+            if (result === 'ok') return;
+            if (result === 'domain') {
+                setError('Solo se permiten correos corporativos @enlight.mx.');
+            } else {
+                setError('Contraseña incorrecta. Intenta de nuevo.');
+            }
+            setLoading(false);
+        }, 600);
+    };
+
+    const handleKey = (e) => { if (e.key === 'Enter') handleSubmit(); };
+
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-[#f7f8f9]" style={{fontFamily:"'Alexandria', sans-serif"}}>
+            <div className="w-full max-w-md px-6">
+                <div className="bg-white rounded-3xl shadow-xl p-10 border border-gray-100">
+                    <div className="flex justify-center mb-8">
+                        <img src="https://www.enlight.mx/hubfs/Casos%20de%20%C3%A9xito/Logotipo_Enlight-02.png" alt="Enlight" className="h-10 object-contain" />
+                    </div>
+                    <h1 className="text-2xl font-bold text-[#293C47] text-center mb-1">Bienvenido</h1>
+                    <p className="text-sm text-gray-400 text-center mb-8">Ingresa tus credenciales para continuar</p>
+
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-xs font-bold text-[#293C47] uppercase tracking-widest mb-1 block">Correo electrónico</label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={e => { setEmail(e.target.value); setError(''); }}
+                                onKeyDown={handleKey}
+                                placeholder="correo@enlight.mx"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-[#f7f8f9] text-sm text-[#293C47] outline-none focus:ring-2 focus:ring-[#00AA85] transition-all"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-xs font-bold text-[#293C47] uppercase tracking-widest mb-1 block">Contraseña</label>
+                            <div className="relative">
+                                <input
+                                    type={showPass ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={e => { setPassword(e.target.value); setError(''); }}
+                                    onKeyDown={handleKey}
+                                    placeholder="••••••••"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-[#f7f8f9] text-sm text-[#293C47] outline-none focus:ring-2 focus:ring-[#00AA85] transition-all pr-12"
+                                />
+                                <button onClick={() => setShowPass(p => !p)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#293C47] transition-colors text-xs font-bold">
+                                    {showPass ? 'OCULTAR' : 'VER'}
+                                </button>
+                            </div>
+                        </div>
+
+                        {error && (
+                            <div className="bg-red-50 border border-red-100 text-red-500 text-xs rounded-xl px-4 py-3 text-center font-medium">
+                                {error}
+                            </div>
+                        )}
+
+                        <button
+                            onClick={handleSubmit}
+                            disabled={loading}
+                            className="w-full py-4 rounded-xl font-bold text-sm transition-all mt-2"
+                            style={{backgroundColor: loading ? '#ccc' : '#FFA817', color: 'white', cursor: loading ? 'not-allowed' : 'pointer'}}
+                        >
+                            {loading ? 'Verificando...' : 'Ingresar'}
+                        </button>
+                    </div>
+
+                    <p className="text-center text-[10px] text-gray-300 mt-8">
+                        © {new Date().getFullYear()} Enlight · Casos de Éxito
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
 const App = () => {
+    const { authed, login, logout } = useAuth();
+    if (!authed) return <LoginPage onLogin={login} />;
     const [activeTab, setActiveTab] = useState('solar');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedSector, setSelectedSector] = useState('all');
@@ -146,10 +259,11 @@ const App = () => {
         return ALL_DATA.microgrids || [];
     }, [activeTab]);
 
-    const allSectors      = useMemo(() => [...new Set(currentProjects.map(p => p.sector).filter(Boolean))].sort(),       [currentProjects]);
-    const allLocations    = useMemo(() => [...new Set(currentProjects.map(p => p.location).filter(Boolean))].sort(),     [currentProjects]);
-    const allSolutionTypes= useMemo(() => [...new Set(currentProjects.map(p => p.solutionType).filter(Boolean))].sort(), [currentProjects]);
-    const allSchemes      = useMemo(() => [...new Set(currentProjects.map(p => p.scheme).filter(Boolean))].sort(),       [currentProjects]);
+    const allProjects     = useMemo(() => [...(ALL_DATA.solar||[]), ...(ALL_DATA.storage||[]), ...(ALL_DATA.microgrids||[])], []);
+    const allSectors      = useMemo(() => [...new Set(allProjects.map(p => p.sector).filter(Boolean))].sort(),       [allProjects]);
+    const allLocations    = useMemo(() => [...new Set(allProjects.map(p => p.location).filter(Boolean))].sort(),     [allProjects]);
+    const allSolutionTypes= useMemo(() => [...new Set(allProjects.map(p => p.solutionType).filter(Boolean))].sort(), [allProjects]);
+    const allSchemes      = useMemo(() => [...new Set(allProjects.map(p => p.scheme).filter(Boolean))].sort(),       [allProjects]);
 
     const filteredProjects = useMemo(() => currentProjects.filter(p => {
         if (selectedSector       !== 'all' && p.sector       !== selectedSector)       return false;
@@ -219,6 +333,8 @@ const App = () => {
                         </button>
                         <h1 className="text-3xl font-bold text-[#293C47]">{isAnyFilterActive ? 'Resultados de Búsqueda' : 'Casos de éxito con Enlight'}</h1>
                     </div>
+                    <div className="flex items-center gap-4">
+                    <button onClick={logout} className="text-[10px] font-bold text-gray-400 hover:text-[#293C47] uppercase tracking-widest transition-colors">Cerrar sesión</button>
                     <div className="bg-gray-200 p-1 rounded-xl flex space-x-1">
                         {['solar','storage','microgrids'].map(tab => (
                             <button key={tab} onClick={() => changeTab(tab)} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === tab && !isAnyFilterActive ? 'bg-white shadow text-[#293C47]' : 'text-gray-500'}`}>
