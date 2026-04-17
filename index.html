@@ -13,8 +13,8 @@ body { font-family: "Alexandria", sans-serif !important; background-color: #f7f8
 .sidebar.open { transform: translateX(0); }
 .expandable-content { transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out; max-height: 0; overflow: hidden; opacity: 0; }
 .expandable-content.open { max-height: 1200px; opacity: 1; }
-#login-overlay { position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; }
-#login-overlay .login-bg { position:absolute; inset:0; background-image:url("https://www.enlight.mx/hubfs/Casos%20de%20%C3%A9xito/fondo-abstracto-3d-arquitectura-natural-3d-textura-piedra-espacio-vacio-fondo-plataforma%20(1).jpg"); background-size:cover; background-position:center; opacity:0.2; z-index:0; }
+#login-overlay { position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; background-color:#1a2b35; }
+#login-overlay .login-bg { position:absolute; inset:0; background-image:url("https://www.enlight.mx/hubfs/Casos%20de%20%C3%A9xito/fondo-abstracto-3d-arquitectura-natural-3d-textura-piedra-espacio-vacio-fondo-plataforma%20(1).jpg"); background-size:cover; background-position:center; opacity:0.15; z-index:0; }
 #login-overlay.hidden { display:none; }
 .login-card { position:relative; z-index:1; background:white; border-radius:1.5rem; padding:2.5rem; text-align:center; max-width:440px; width:90%; box-shadow:0 25px 60px rgba(0,0,0,0.15); }
 .login-card img.logo { height:56px; margin:0 auto 2rem; display:block; object-fit:contain; }
@@ -35,7 +35,7 @@ body { font-family: "Alexandria", sans-serif !important; background-color: #f7f8
     <img class="logo" src="https://www.enlight.mx/hubfs/Casos%20de%20%C3%A9xito/Logotipo_Enlight-02.png" alt="Enlight">
     <h1>Bienvenido</h1>
     <p>Inicia sesion para acceder a los Casos de Exito de Enlight</p>
-    <div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID" data-callback="handleCredentialResponse" data-auto_prompt="false"></div>
+    <div id="g_id_onload" data-client_id="1025467016169-fr88hjhbo7ld0s8arqpcde3lr4o1meie.apps.googleusercontent.com" data-callback="handleCredentialResponse" data-auto_prompt="false"></div>
     <div id="g_id_signin" class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="filled_blue" data-text="signin_with" data-size="large" data-locale="es" data-width="320"></div>
     <div id="error-msg"></div>
     <p class="footer-note">Este portal es exclusivo para colaboradores de Enlight. Requiere una cuenta @enlight.mx para ingresar.</p>
