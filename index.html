@@ -13,8 +13,8 @@ body { font-family: "Alexandria", sans-serif !important; background-color: #f7f8
 .sidebar.open { transform: translateX(0); }
 .expandable-content { transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out; max-height: 0; overflow: hidden; opacity: 0; }
 .expandable-content.open { max-height: 1200px; opacity: 1; }
-#login-overlay { position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; background-color:#1a2b35; }
-#login-overlay .login-bg { position:absolute; inset:0; background-image:url("https://www.enlight.mx/hubfs/Casos%20de%20%C3%A9xito/fondo-abstracto-3d-arquitectura-natural-3d-textura-piedra-espacio-vacio-fondo-plataforma%20(1).jpg"); background-size:cover; background-position:center; opacity:0.15; z-index:0; }
+#login-overlay { position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; }
+#login-overlay .login-bg { position:absolute; inset:0; background-image:url("https://www.enlight.mx/hubfs/Casos%20de%20%C3%A9xito/FONDO_SITE.jpg"); background-size:cover; background-position:center; opacity:1; z-index:0; }
 #login-overlay.hidden { display:none; }
 .login-card { position:relative; z-index:1; background:white; border-radius:1.5rem; padding:2.5rem; text-align:center; max-width:440px; width:90%; box-shadow:0 25px 60px rgba(0,0,0,0.15); }
 .login-card img.logo { height:56px; margin:0 auto 2rem; display:block; object-fit:contain; }
@@ -23,7 +23,7 @@ body { font-family: "Alexandria", sans-serif !important; background-color: #f7f8
 .login-card .footer-note { font-size:0.625rem; color:#d1d5db; margin-top:1.5rem; font-family:"Alexandria",sans-serif; }
 #g_id_signin { display:flex; justify-content:center; margin-top:0.5rem; }
 #error-msg { display:none; margin-top:1rem; padding:0.75rem 1rem; background:#fef2f2; border:1px solid #fca5a5; border-radius:0.75rem; font-size:0.8rem; color:#dc2626; }
-#user-chip { display:none; position:fixed; top:16px; right:16px; z-index:1000; background:white; border-radius:999px; padding:6px 14px 6px 8px; box-shadow:0 2px 12px rgba(0,0,0,0.12); align-items:center; gap:8px; font-size:0.78rem; color:#293C47; font-family:"Alexandria",sans-serif; }
+#user-chip { display:none; position:fixed; bottom:16px; left:16px; z-index:1000; background:white; border-radius:999px; padding:6px 14px 6px 8px; box-shadow:0 2px 12px rgba(0,0,0,0.12); align-items:center; gap:8px; font-size:0.78rem; color:#293C47; font-family:"Alexandria",sans-serif; }
 #user-chip img { width:28px; height:28px; border-radius:50%; }
 #user-chip button { margin-left:8px; font-size:0.7rem; color:#828080; background:none; border:none; cursor:pointer; text-decoration:underline; font-family:"Alexandria",sans-serif; }
 </style>
@@ -121,7 +121,7 @@ const ProjectCard = ({project}) => {
           <div className="flex justify-between border-b border-gray-50 pb-1"><span className="text-gray-500">Ubicación</span><span className="font-medium text-right">{project.location}</span></div>
           {isBESS ? (<div className="flex justify-between border-b border-gray-50 pb-1"><span className="text-gray-500">Capacidad de almacenamiento</span><span className="font-bold">{project.storageCapacity}</span></div>) : isMicrogrid ? (<div className="flex justify-between border-b border-gray-50 pb-1"><span className="text-gray-500">Sector</span><span className="font-bold">{project.sector}</span></div>) : (<div className="flex justify-between border-b border-gray-50 pb-1"><span className="text-gray-500">Potencia</span><span className="font-bold">{project.power}</span></div>)}
         </div>
-        <button onClick={() => setIsOpen(!isOpen)} className="mt-6 w-full py-3 bg-[#f7f8f9] text-[#293C47] rounded-xl text-xs font-bold hover:bg-[#FFA817] hover:text-white transition-all flex items-center justify-center gap-2">
+        <button onClick={() => setIsOpen(!isOpen)} className={"mt-6 w-full py-3 bg-[#f7f8f9] text-[#293C47] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 " + (isBESS ? "hover:bg-[#FFA817]" : isMicrogrid ? "hover:bg-[#3D7D80]" : "hover:bg-[#00AA85]") + " hover:text-white"}>
           {isOpen ? "Ocultar Detalles" : "Ver Detalles del Caso"}
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={"transition-transform duration-300 " + (isOpen ? "rotate-180" : "")}><polyline points="6 9 12 15 18 9"></polyline></svg>
         </button>
@@ -195,7 +195,7 @@ const App = () => {
         </header>
         {!isAnyFilterActive && renderBanner()}
         {isAnyFilterActive && <div className="mb-6"><span className="text-sm text-gray-500">Mostrando {filteredProjects.length} proyectos encontrados en todas las categorías:</span></div>}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">{filteredProjects.map(p => <ProjectCard key={p.id} project={p} />)}</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">{filteredProjects.map(p => <ProjectCard key={activeTab + "-" + p.id} project={p} />)}</div>
         {filteredProjects.length === 0 && <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-dashed border-gray-200"><p className="text-gray-400 font-bold italic">No se encontraron proyectos con los filtros seleccionados.</p></div>}
       </div>
     </div>
